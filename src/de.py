@@ -4,6 +4,8 @@ Implements the differential evolution optimization method by Storn & Price
 
 .. moduleauthor:: Hannu Parviainen <hannu@iac.es>
 """
+from __future__ import print_function, division 
+
 import sys
 import numpy as np
 from numpy import asarray, tile
@@ -14,7 +16,7 @@ class DiffEvol(object):
     Implements the differential evolution optimization method by Storn & Price
     (Storn, R., Price, K., Journal of Global Optimization 11: 341--359, 1997)
     """
-    def __init__(self, fun, bounds, npop, ngen, F=0.5, C=0.5, seed=0, verbose=True):
+    def __init__(self, fun, bounds, npop, ngen, F=0.5, C=0.5, seed=0, verbose=False):
         """
 
         :param fun: the function to be minimized
@@ -46,24 +48,22 @@ class DiffEvol(object):
         self.bl = tile(self.bounds[:,0],[npop,1])
         self.bw = tile(self.bounds[:,1]-self.bounds[:,0],[npop,1])
         
+        self.verbose = verbose
         self.seed = seed
         self.F = F
         self.C = C
-        self.verbose = verbose
 
         np.random.seed(self.seed)
         self.result = DiffEvolResult(npop, self.n_parm, self.bl, self.bw)
 
 
     def __call__(self):
-        """The differential evolution algorithm.
-           Note: here we maximize the function instead of minimizing."""
         r = self.result
         t = np.zeros(3, np.int)
         
         for i in xrange(self.n_pop):
-            r.fit[i] = self.minfun(r.pop[i,:])
-            
+            r._fitness[i] = self.minfun(r._population[i,:])
+
         for j in xrange(self.n_gen):
             for i in xrange(self.n_pop):
                 t[:] = i
@@ -74,11 +74,11 @@ class DiffEvol(object):
                 while  t[2] == i or t[2] == t[0] or t[2] == t[1]:
                     t[2] = randint(self.n_pop)
     
-                v = r.pop[t[0],:] + self.F * (r.pop[t[1],:] - r.pop[t[2],:])
+                v = r._population[t[0],:] + self.F * (r._population[t[1],:] - r._population[t[2],:])
 
                 ## --- CROSS OVER ---
                 crossover = random(self.n_parm) <= self.C
-                u = np.where(crossover, v, r.pop[i,:])
+                u = np.where(crossover, v, r._population[i,:])
 
                 ## --- FORCED CROSSING ---
                 ri = randint(self.n_parm)
@@ -86,34 +86,40 @@ class DiffEvol(object):
 
                 ufit = self.minfun(u)
     
-                if ufit < r.fitness[i]:
-                    r.pop[i,:] = u[:].copy()
-                    r.fit[i]   = ufit
+                if ufit < r._fitness[i]:
+                    r._population[i,:] = u[:].copy()
+                    r._fitness[i]      = ufit
                           
             if self.verbose:
-                sys.stdout.write('\rNode %i finished generation %4i/%4i  F = %7.5f'%(self.rank, j+1, self.n_gen, r.fit.min())); sys.stdout.flush()
+                print('  {:4d}/{:4d}  F = {:7.5f}'.format(j+1, self.n_gen, r._fitness.min()));
 
-        self.result.minidx = np.argmin(r.fitness)
+        self.result._minidx = np.argmin(r._fitness)
         return self.result
 
 
 class DiffEvolResult(object):
     """
-    Encapsulates the results from the differential evolution fitting.
+    Encapsulates the results from the differential evolution class.
     """
     def __init__(self, npop, npar, bl, bw):
-        self.population = bl + random([npop, npar]) * bw
-        self.fitness    = np.zeros(npop)
-        self.pop        = self.population
-        self.fit        = self.fitness
-        self.minidx     = None
+        self._population = bl + random([npop, npar]) * bw
+        self._fitness    = np.zeros(npop)
+        self._minidx     = None
 
-        
-    def get_fitness(self):
+    @property
+    def population(self):
+        return self._population
+
+    @property
+    def minimum_value(self):
         """Returns the best-fit value of the minimized function."""
-        return self.fitness[self.minidx]
+        return self._fitness[self._minidx]
 
-    
-    def get_best_fit(self):
+    @property
+    def minimum_location(self):
         """Returns the best-fit solution."""
-        return self.population[self.minidx,:]
+        return self._population[self._minidx,:]
+
+    @property
+    def minimum_index(self):
+        return self._minidx
