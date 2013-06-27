@@ -90,7 +90,7 @@ class NormalPrior(Prior):
         super(NormalPrior, self).__init__(*lims, name=name, description=description, unit=unit,squeeze=squeeze)
         self.mean = float(mean)
         self.std = float(std)
-        self._f1 = 1./ sqrt(2.*pi*std*std)
+        self._f1 = 1./ math.sqrt(2.*pi*std*std)
         self._lf1 = math.log(self._f1)
         self._f2 = 1./ (2.*std*std)
 
