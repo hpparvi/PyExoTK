@@ -6,13 +6,13 @@ import distutils.sysconfig as ds
 
 conf = Configuration()
 
-setup(name='PEC',
-      version='1.0',
+setup(name='PyExoFit',
+      version='0.5',
       description='Tools for exoplanet transit light curve analysis.',
       author='Hannu Parviainen',
-      author_email='hpparvia@gmail.com',
-      url='',
+      author_email='hpparvi@gmail.com',
+      url='https://github.com/hpparvi/PyExoChar',
       extra_options = ['-fopenmp'],
-      package_dir={'pec':'src'},
-      packages=['pec']
+      package_dir={'exofit':'src'},
+      packages=['exofit']
      )
