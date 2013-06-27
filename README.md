@@ -1,4 +1,4 @@
-PyExoChar
-=========
+PyExoFit
+========
 
 Exoplanet characterisation toolkit using Python and Fortran
