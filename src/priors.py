@@ -60,7 +60,7 @@ class UniformPrior(Prior):
             return self._lf if self.a < x < self.b else -1e18
 
     def random(self, size=1):
-        return uniform(self.a, self.b, size=size)
+        return np.random.uniform(self.a, self.b, size=size)
 
 
 class JeffreysPrior(Prior):
@@ -81,7 +81,7 @@ class JeffreysPrior(Prior):
             return math.log(1. / (x*self._f)) if self.a < x < self.b else -1e18
 
     def random(self, size=1):
-        return uniform(self.a, self.b, size=size)
+        return np.random.uniform(self.a, self.b, size=size)
 
 
 class NormalPrior(Prior):
@@ -90,7 +90,7 @@ class NormalPrior(Prior):
         super(NormalPrior, self).__init__(*lims, name=name, description=description, unit=unit,squeeze=squeeze)
         self.mean = float(mean)
         self.std = float(std)
-        self._f1 = 1./ math.sqrt(2.*pi*std*std)
+        self._f1 = 1./ math.sqrt(2.*math.pi*std*std)
         self._lf1 = math.log(self._f1)
         self._f2 = 1./ (2.*std*std)
 
@@ -107,7 +107,7 @@ class NormalPrior(Prior):
             return self._lf1 -(x-self.mean)**2*self._f2 if self.a < x < self.b else -1e18
 
     def random(self, size=1):
-        return uniform(self.a, self.b, size=size) #normal(self.mean, self.std, size)
+        return np.random.uniform(self.a, self.b, size=size) #normal(self.mean, self.std, size)
     
 
 UP = UniformPrior
