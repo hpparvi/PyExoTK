@@ -18,6 +18,7 @@ class LCLogPosteriorFunction(object):
 
         self.pid_ar = None
         self.pid_ld = None
+        self.pid_private = None
 
         ## Precalculate the likelihood constants
         ## =====================================
@@ -27,8 +28,8 @@ class LCLogPosteriorFunction(object):
         ## =============
         pr = kwargs.get('priors', {})
         self.priors = []
-        self.priors.extend([UP( 0.0005,    0.005, 'e', 'Average ptp scatter') for i in range(self.lcdata.npb)])
-        self.priors.extend([UP(    0.0,      0.0, 'c', 'Contamination') for i in range(self.lcdata.npb)])
+        self.priors.extend([UP(0.2, 5.0, 'e', 'Error multiplier') for i in range(self.lcdata.npb)])
+        self.priors.extend([UP(0.0, 0.01, 'c', 'Contamination') for i in range(self.lcdata.npb)])
         self.ps = PriorSet(self.priors)
 
         self.np = len(self.priors)
@@ -38,13 +39,26 @@ class LCLogPosteriorFunction(object):
     def compute_continuum(self, pv):
         raise NotImplementedError
 
+
     def compute_transit(self, pv):
-        z = of.z_eccentric(self.lcdata.time, *group._pv_o_physical, nthreads=0)
+        print self.group._pv_o_physical
+        z = of.z_eccentric(self.lcdata.time, *self.group._pv_o_physical, nthreads=0)
         f = self.tmodel(z, m.sqrt(pv[self.pid_ar[0]]), pv[self.pid_ld], 0.0)
-        raise NotImplementedError
+        return f
+
 
     def compute_lc_model(self, pv):
-        raise NotImplementedError
+        return self.compute_transit(pv)
+
 
     def log_posterior(self, pv):
-        raise NotImplementedError
+        log_prior  = self.ps.c_log_prior(pv[self.pid_private])
+
+        flux_m  = self.compute_lc_model(pv)
+        err     = self.lcdata.errors*pv[self.pid_err]
+        chisqr  = (((self.lcdata.fluxes - flux_m)/err)**2).sum()
+
+        log_likelihood = self.lln - 0.5*(np.log(err)).sum() -0.5*chisqr
+
+        return log_prior + log_likelihood
+

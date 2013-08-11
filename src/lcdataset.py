@@ -22,22 +22,35 @@ class TSDataSet(object):
 
 
 class LCDataSet(TSDataSet):
-    def __init__(self, time, fluxes, btime=0.3):
+    def __init__(self, time, lcdata, btime=0.3):
         """
         Parameters
-          times  : Array of of exposure center times
-          fluxes : Dictionary of fluxe arrays as {(pb_name,pb_center,pb_width): flux_pb}
+          time   : Array of of exposure center times
+          lcdata : Dictionary of flux and error arrays as {passband: (flux_pb, error_pb)}
 
         Optional parameters
           btime  : Minimum time gap between separate transits
+
+        Notes
+          The lcdata dictionary can either contain only the flux values, or both the fluxes
+          and error estimates. If errors are not give, a constant average error of 1 ppt is 
+          assumed.
+
+          The btime parameter sets the time interval used to break the dataset into separate
+          chunks.
         """
 
         super(LCDataSet, self).__init__(time)
 
-        self.passbands = sorted(fluxes.keys(), key=lambda t: t.center)
-        self.fluxes    = [np.asarray(fluxes[pb]) for pb in self.passbands]
+        self.passbands = sorted(lcdata.keys(), key=lambda t: t.center)
         self.npb       = len(self.passbands)
 
+        if len(lcdata[lcdata.keys()[0]]) == 2:
+            self.fluxes = [np.asarray(lcdata[pb][0]) for pb in self.passbands]
+            self.errors = [np.asarray(lcdata[pb][1]) for pb in self.passbands]
+        else:
+            self.fluxes = [np.asarray(lcdata[pb]) for pb in self.passbands]
+            self.errors = [1e-3*np.ones_like(f) for f in self.fluxes]
 
         breaks = np.diff(self.time) > btime
         breaks = np.concatenate([[0], np.arange(self.npt)[breaks]+1, [self.npt]])

@@ -12,12 +12,17 @@ DTOS = 86400
 
 class LPFGroup(object):
 
-    def __init__(self, orbit_priors={}):
+    def __init__(self, npop=70, orbit_priors={}, ar_priors={}, ld_priors={}):
+        self.npop = npop
+        
         self.lc_lpfunctions = []
         self.rv_lpfunctions = []
 
         self.lclp = self.lc_lpfunctions
         self.rvlp = self.rv_lpfunctions
+
+        self.ar_pdef = ar_priors
+        self.ld_pdef = ld_priors
 
         pr = orbit_priors
         self.orbit_priors = [pr.get( 'tc'),                                                            ##  0  - Transit center
@@ -27,6 +32,7 @@ class LPFGroup(object):
                              pr.get(  'e', UP(      0,   0.001,   'e', 'Eccentricity')),               ##  4  - Eccentricity
                              pr.get(  'w', UP(      0,   0.001,   'w', 'Argument of periastron'))]     ##  5  - Argument of periastron
         self.orbit_ps = PriorSet(self.orbit_priors)
+
         self.lc_passbands = []
 
         self.nor = 6
@@ -84,16 +90,34 @@ class LPFGroup(object):
         self.lc_passbands = final_pb_set
         self.nld = 2*len(self.lc_passbands)
 
-        ## Setup the private space for logposterior functions
-        ## ==================================================
+        ## Setup the private space for log-posterior functions
+        ## ===================================================
         self.lc_start_idx = self.ld_start_idx+self.nld+np.cumsum([0]+[lpf.np for lpf in self.lclp[:-1]])        
         for i,lpf in enumerate(self.lclp):
             lpf.pv_start_idx = self.lc_start_idx[i]
         self.nlc = sum([lpf.np for lpf in self.lclp])
 
 
+        ## Generate rest of the prior sets
+        ## ===============================
+        self.ar_priors = [self.ar_pdef.get('ar {:d}'.format(ai), UP(0.05**2, 0.15**2, 'ar', 'area ratio', '1/As')) for ai in ar_groups]
+        self.ar_pset = PriorSet(self.ar_priors)
+
+        self.ld_priors = []
+        for pb in self.lc_passbands:
+            self.ld_priors.append(self.ld_pdef.get('u {:s}'.format(pb.name), UP( 0.0,1.3,  'u {:s}'.format(pb.name), 'Linear limb darkening coefficient')))
+            self.ld_priors.append(self.ld_pdef.get('v {:s}'.format(pb.name), UP(-0.3,0.7,  'v {:s}'.format(pb.name), 'Quadratic limb darkening coefficient')))
+        self.ld_pset = PriorSet(self.ld_priors)
+
+        pv0_basic      = np.hstack([ps.generate_pv_population(self.npop) for ps in [self.orbit_ps, self.ar_pset, self.ld_pset]])
+        pv0_lc_private = np.hstack([lpf.ps.generate_pv_population(self.npop) for lpf in self.lclp])
+
+        self.pv0 = np.hstack([pv0_basic, pv0_lc_private])
+
+
+
     def map_orbit(self, pv):
-        a = AC*(pv[1]**2*DTOS * 1e3*pv[2])**(1/3)
+        a = AC*((pv[1]*DTOS)**2 * 1e3*pv[2])**(1/3)
         i = math.acos(pv[4]/a)
         self._pv_o_physical = pv[:6].copy()
         self._pv_o_physical[2] = a
@@ -113,15 +137,15 @@ if __name__ == '__main__':
 
     pbs = [PB('z',500,100), PB('g',700,100, kgroup=1), PB('b',400,100), PB('h', 1200, 100)]
 
-    times1 = np.concatenate([np.linspace(i,i+0.5,10) for i in range(4)])
-    fluxes1 = {pbs[0]:np.concatenate([np.linspace(0,2,10) for i in range(4)]),
-               pbs[1]:np.concatenate([np.linspace(0,2,10) for i in range(4)]),
-               pbs[2]:np.concatenate([np.linspace(0,2,10) for i in range(4)])}
+    times1 = np.concatenate([np.linspace(i,i+0.5,100) for i in range(4)])
+    fluxes1 = {pbs[0]:np.concatenate([np.linspace(0,2,100) for i in range(4)]),
+               pbs[1]:np.concatenate([np.linspace(0,2,100) for i in range(4)]),
+               pbs[2]:np.concatenate([np.linspace(0,2,100) for i in range(4)])}
 
-    times2 = np.concatenate([np.linspace(i+8,i+8.5,10) for i in range(4)])
-    fluxes2 = {pbs[0]:np.concatenate([np.linspace(0,2,10) for i in range(4)]),
-               pbs[3]:np.concatenate([np.linspace(0,2,10) for i in range(4)]),
-               pbs[2]:np.concatenate([np.linspace(0,2,10) for i in range(4)])}
+    times2 = np.concatenate([np.linspace(i+8,i+8.5,100) for i in range(4)])
+    fluxes2 = {pbs[0]:np.concatenate([np.linspace(0,2,100) for i in range(4)]),
+               pbs[1]:np.concatenate([np.linspace(0,2,100) for i in range(4)]),
+               pbs[2]:np.concatenate([np.linspace(0,2,100) for i in range(4)])}
 
     ds1 = LCDataSet(times1, fluxes1)
     ds2 = LCDataSet(times2, fluxes2)
@@ -129,10 +153,16 @@ if __name__ == '__main__':
     lpf1 = LCLogPosteriorFunction(ds1)
     lpf2 = LCLogPosteriorFunction(ds2)
 
-    priors = {'tc': NP(0,0.1, 'tc'),
-              'p':  NP(0,1.0, 'p')}
+    priors = {'tc': NP(0.24, 0.01, 'tc'),
+              'p':  NP(1.00, 0.01, 'p')}
 
-    g = LPFGroup(priors)
+    g = LPFGroup(10, priors)
     g.add_lpfunction(lpf1)
     g.add_lpfunction(lpf2)
     g.finalize()
+
+    import matplotlib.pyplot as pl
+    g.map_orbit(g.pv0[0,:])
+    pl.plot(g.lclp[0].lcdata.time, g.lclp[0].compute_transit(g.pv0[0,:]))
+    pl.show()
+    print g.pv0.shape
