@@ -29,6 +29,7 @@
 from __future__ import division
 
 from scipy.constants import G, pi
+import numpy as np
 
 au,   au_e             = 1.496e11, 0.0       
 msun, msun_e           = 1.9891e30, 0.0      
@@ -48,7 +49,7 @@ rearth_eq, rearth_eq_e = 6.3781e6, 0.0
 dearth, dearth_e       = 5.514, 0.0       
 
 def as_from_rhop(rho, period):
-    """Calculates the scaled semi-major axis from the stellar density and planet's orbital period.
+    """Scaled semi-major axis from the stellar density and planet's orbital period.
 
     Parameters
     ----------
@@ -65,7 +66,7 @@ def as_from_rhop(rho, period):
 
 
 def a_from_rhoprs(rho, period, rstar):
-    """Calculates the semi-major axis from the stellar density, stellar radius, and planet's orbital period.
+    """Semi-major axis from the stellar density, stellar radius, and planet's orbital period.
 
     Parameters
     ----------
@@ -80,3 +81,26 @@ def a_from_rhoprs(rho, period, rstar):
       a : semi-major axis [AU]
     """
     return as_from_rhop(rho,period)*rstar*rsun/au
+
+
+def af_transit(e,w):
+    """Calculates the -- factor during the transit"""
+    return (1.0-e**2)/(1.0 + e*np.sin(w))
+
+def i_from_baew(b,a,e,w):
+    """Orbital inclination from the impact parameter, scaled semi-major axis, eccentricity and argument of periastron
+
+    Parameters
+    ----------
+
+      b  : impact parameter       [-]
+      a  : scaled semi-major axis [R_Star]
+      e  : eccentricity           [-]
+      w  : argument of periastron [rad]
+
+    Returns
+    -------
+
+      i  : inclination            [rad]
+    """
+    return np.arccos(b / (a*af_transit(e, w)))
