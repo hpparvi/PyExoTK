@@ -14,5 +14,5 @@ setup(name='PyExoTK',
       url='https://github.com/hpparvi/PyExoTK',
       extra_options = ['-fopenmp'],
       package_dir={'exotk':'src'},
-      packages=['exotk','exotk.utils','exotk.detrending']
+      packages=['exotk','exotk.utils']
      )
