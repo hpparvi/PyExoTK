@@ -1,3 +1,9 @@
+"""
+Secondary eclipses
+------------------
+
+"""
+
 from __future__ import division
 from numpy import sqrt, exp
 
@@ -76,7 +82,7 @@ def thermal_fr(Ts, a, f, A, l, Ti=0):
 
       fr: Thermal flux ratio              [-]
     """
-    return Planck(Tp(Ts, a, f, A)+Ti, l) / Planck(Ts, l)
+    return Planck(Teq(Ts, a, f, A)+Ti, l) / Planck(Ts, l)
 
 
 def flux_ratio(Ts, a, f, A, l, r=1.5, Ti=0):
@@ -123,7 +129,7 @@ def solve_Teq(fr, Ts, a, A, l, r=1.5, Ti=0):
     """
     Bs = Planck(Ts, l)
     try:
-        return brentq(lambda Tp: reflected_fr(a, A, r) + Planck(Tp+Ti, l)/Bs - fr, 5, Ts)
+        return brentq(lambda Teq: reflected_fr(a, A, r) + Planck(Tp+Ti, l)/Bs - fr, 5, Ts)
     except ValueError:
         return np.NaN
 
@@ -171,5 +177,5 @@ def solve_redistribution(fr, Ts, a, A, l):
 
       f : Redistribution factor
     """
-    Tps = solve_Tp(fr, Ts, l)
-    return brentq(lambda f: Tp(Ts, a, f, A) - Tps, 0.25, 15)
+    Teqs = solve_Teq(fr, Ts, l)
+    return brentq(lambda f: Teq(Ts, a, f, A) - Teqs, 0.25, 15)
