@@ -7,7 +7,7 @@ Implements the differential evolution optimization method by Storn & Price
 from __future__ import division 
 
 import numpy as np
-from numpy.random import seed, random, randint
+from numpy.random import random, randint
 
 class DiffEvol(object):
     """
@@ -32,8 +32,11 @@ class DiffEvol(object):
 
     :param seed: (optional)
         Random seed
+
+    :param maximize: (optional)
+        Switch setting whether to maximize or minimize the function. Defaults to minimization.
     """ 
-    def __init__(self, fun, bounds, npop, F=0.5, C=0.5, seed=0, **kwargs):
+    def __init__(self, fun, bounds, npop, F=0.5, C=0.5, seed=0, maximize=False):
         np.random.seed(seed)
 
         self.minfun = fun
@@ -42,7 +45,8 @@ class DiffEvol(object):
         self.n_par  = (self.bounds).shape[0]
         self.bl = np.tile(self.bounds[:,0],[npop,1])
         self.bw = np.tile(self.bounds[:,1]-self.bounds[:,0],[npop,1])
-        
+        self.m  = -1 if maximize else 1
+
         self.seed = seed
         self.F = F
         self.C = C
@@ -73,14 +77,15 @@ class DiffEvol(object):
 
     def optimize(self, ngen):
         """Run the optimizer for ``ngen`` generations"""
-        for res in self(ngen): pass
+        for res in self(ngen):
+            pass
         return res
 
     def __call__(self, ngen=1):
         t = np.zeros(3, np.int)
         
         for i in xrange(self.n_pop):
-            self._fitness[i] = self.minfun(self._population[i,:])
+            self._fitness[i] = self.m * self.minfun(self._population[i,:])
 
         for j in xrange(ngen):
             for i in xrange(self.n_pop):
@@ -102,7 +107,7 @@ class DiffEvol(object):
                 ri = randint(self.n_par)
                 u[ri] = v[ri].copy()
 
-                ufit = self.minfun(u)
+                ufit = self.m * self.minfun(u)
     
                 if ufit < self._fitness[i]:
                     self._population[i,:] = u[:].copy()
