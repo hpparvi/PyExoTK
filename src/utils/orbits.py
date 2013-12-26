@@ -3,6 +3,8 @@ from __future__ import division
 import numpy as np
 from scipy.constants import G, pi
 
+from exotk.constants import rsun, au
+
 def as_from_rhop(rho, period):
     """Scaled semi-major axis from the stellar density and planet's orbital period.
 
