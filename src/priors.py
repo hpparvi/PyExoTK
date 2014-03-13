@@ -76,7 +76,7 @@ class JeffreysPrior(Prior):
 
     def log(self, x, pv=None):
         if isinstance(x, np.ndarray):
-            return np.where((self.a < x) & (x < self.b), math.log(1. / (x*self._f)), -1e18 * np.ones(x.size))
+            return np.where((self.a < x) & (x < self.b), np.log(1. / (x*self._f)), -1e18 * np.ones(x.size))
         else:
             return math.log(1. / (x*self._f)) if self.a < x < self.b else -1e18
 
@@ -110,7 +110,22 @@ class NormalPrior(Prior):
         return np.random.uniform(self.a, self.b, size=size) #normal(self.mean, self.std, size)
     
 
+class DummyPrior(Prior):
+    def __init__(self, a, b, name='', description='', unit=''):
+        super(DummyPrior, self).__init__(a, b, name=name, description=description, unit=unit)
+
+    def __call__(self, x, pv=None):
+        return np.ones_like(x) if isinstance(x, np.ndarray) else 1.
+
+    def log(self, x, pv=None):
+        return np.zeros_like(x) if isinstance(x, np.ndarray) else 0.
+
+    def random(self, size=1):
+        return np.random.uniform(self.a, self.b, size=size)
+
+
 UP = UniformPrior
 JP = JeffreysPrior
 GP = NormalPrior
 NP = NormalPrior 
+DP = DummyPrior

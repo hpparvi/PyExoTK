@@ -31,6 +31,10 @@ from __future__ import division
 from scipy.constants import G, pi
 import numpy as np
 
+d_h = 24.
+d_m = 60 * d_h
+d_s = 60 * d_m
+
 au,   au_e             = 1.496e11, 0.0       
 msun, msun_e           = 1.9891e30, 0.0      
 rsun, rsun_e           = 0.5*1.392684e9, 0.0

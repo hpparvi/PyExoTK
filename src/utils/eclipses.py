@@ -5,7 +5,7 @@ Secondary eclipses
 """
 
 from __future__ import division
-from numpy import sqrt, exp
+from numpy import sqrt, exp, NaN
 
 from scipy.constants import k,h,c
 from scipy.optimize import brentq
@@ -129,9 +129,9 @@ def solve_Teq(fr, Ts, a, A, l, r=1.5, Ti=0):
     """
     Bs = Planck(Ts, l)
     try:
-        return brentq(lambda Teq: reflected_fr(a, A, r) + Planck(Tp+Ti, l)/Bs - fr, 5, Ts)
+        return brentq(lambda Teq: reflected_fr(a, A, r) + Planck(Teq+Ti, l)/Bs - fr, 5, Ts)
     except ValueError:
-        return np.NaN
+        return NaN
 
 
 def solve_A(fr, Ts, a, f, l, r=1.5, Ti=0):
@@ -156,7 +156,7 @@ def solve_A(fr, Ts, a, f, l, r=1.5, Ti=0):
     try:
         return brentq(lambda A: reflected_fr(a, A, r) + thermal_fr(Ts, a, f, A, l, Ti) - fr, 0, 0.3)
     except ValueError:
-        return np.NaN
+        return NaN
 
 def solve_redistribution(fr, Ts, a, A, l):
     """Solve the redistribution factor.

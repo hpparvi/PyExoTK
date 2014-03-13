@@ -2,8 +2,41 @@ from __future__ import division
 
 import numpy as np
 from scipy.constants import G, pi
+from exotk.constants import rsun, msun, au, d_s
 
-from exotk.constants import rsun, au
+def p_from_am(a=1., ms=1.):
+    """Orbital period from the semi-major axis and stellar mass.
+
+    Parameters
+    ----------
+
+      a    : semi-major axis [AU]
+      ms   : stellar mass    [M_Sun]
+
+    Returns
+    -------
+
+      p    : Orbital period  [d]
+    """
+    return np.sqrt((4*pi**2*(a*au)**3)/(G*ms*msun)) / d_s
+
+    
+def a_from_mp(ms, period):
+    """Semi-major axis from the stellar mass and planet's orbital period.
+
+    Parameters
+    ----------
+
+      ms     : stellar mass    [M_Sun]
+      period : orbital period  [d]
+
+    Returns
+    -------
+
+      a : semi-major axis [AU]
+    """
+    return ((G*(ms*msun)*(period*d_s)**2)/(4*pi**2))**(1/3)/au
+
 
 def as_from_rhop(rho, period):
     """Scaled semi-major axis from the stellar density and planet's orbital period.
@@ -19,7 +52,7 @@ def as_from_rhop(rho, period):
 
       as : scaled semi-major axis [R_star]
     """
-    return (G/(3*pi))**(1/3)*((period*86400.)**2 * 1e3*rho)**(1/3)
+    return (G/(3*pi))**(1/3)*((period*d_s)**2 * 1e3*rho)**(1/3)
 
 
 def a_from_rhoprs(rho, period, rstar):
