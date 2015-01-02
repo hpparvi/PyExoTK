@@ -23,6 +23,10 @@ class PriorSet(object):
     def c_prior(self, pv):
         return math.exp(self.c_log_prior(pv))
 
+    @property
+    def names(self):
+        return [p.name for p in self.priors]
+
 
 class Prior(object):
     def __init__(self, a, b, name='', description='', unit='', squeeze=1.):
@@ -49,13 +53,13 @@ class UniformPrior(Prior):
 
     def __call__(self, x, pv=None):
         if isinstance(x, np.ndarray):
-            return np.where((self.a < x) & (x < self.b), self._f, 1e-80 * np.ones(x.size))
+            return np.where((self.a < x) & (x < self.b), self._f, 1e-80)
         else:
             return self._f if self.a < x < self.b else 1e-80
 
     def log(self, x, pv=None):
         if isinstance(x, np.ndarray):
-            return np.where((self.a < x) & (x < self.b), self._lf, -1e18 * np.ones(x.size))
+            return np.where((self.a < x) & (x < self.b), self._lf, -1e18)
         else:
             return self._lf if self.a < x < self.b else -1e18
 
@@ -70,13 +74,13 @@ class JeffreysPrior(Prior):
 
     def __call__(self, x, pv=None):
         if isinstance(x, np.ndarray):
-            return np.where((self.a < x) & (x < self.b), 1. / (x*self._f), 1e-80 * np.ones(x.size))
+            return np.where((self.a < x) & (x < self.b), 1. / (x*self._f), 1e-80)
         else:
             return 1. / (x*self._f) if self.a < x < self.b else 1e-80
 
     def log(self, x, pv=None):
         if isinstance(x, np.ndarray):
-            return np.where((self.a < x) & (x < self.b), np.log(1. / (x*self._f)), -1e18 * np.ones(x.size))
+            return np.where((self.a < x) & (x < self.b), np.log(1. / (x*self._f)), -1e18)
         else:
             return math.log(1. / (x*self._f)) if self.a < x < self.b else -1e18
 
@@ -96,13 +100,13 @@ class NormalPrior(Prior):
 
     def __call__(self, x, pv=None):
         if isinstance(x, np.ndarray):
-            return np.where((self.a < x) & (x < self.b),  self._f1 * np.exp(-(x-self.mean)**2 * self._f2), 1e-80 * np.ones(x.size))
+            return np.where((self.a < x) & (x < self.b),  self._f1 * np.exp(-(x-self.mean)**2 * self._f2), 1e-80)
         else:
             return self._f1 * exp(-(x-self.mean)**2 * self._f2) if self.a < x < self.b else 1e-80
 
     def log(self, x, pv=None):
         if isinstance(x, np.ndarray):
-            return np.where((self.a < x) & (x < self.b),  self._lf1 - (x-self.mean)**2 * self._f2, -1e18 * np.ones(x.size))
+            return np.where((self.a < x) & (x < self.b),  self._lf1 - (x-self.mean)**2 * self._f2, -1e18)
         else:
             return self._lf1 -(x-self.mean)**2*self._f2 if self.a < x < self.b else -1e18
 

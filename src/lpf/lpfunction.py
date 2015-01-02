@@ -18,8 +18,9 @@ class LCLogPosteriorFunction(object):
 
         self.pid_ar = None
         self.pid_ld = None
-        self.pid_private = None
+ 
 
+        self.pid_private = None
         ## Precalculate the likelihood constants
         ## =====================================
         self.lln = -0.5*self.lcdata.npt * m.log(2*m.pi)
