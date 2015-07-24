@@ -16,5 +16,6 @@ setup(name='PyExoTK',
       package_dir={'exotk':'src'},
       packages=['exotk','exotk.utils','exotk.lpf','exotk.io'],
       ext_modules=[ Extension('exotk.utils.misc_f', ['src/utils/utilities.f90'], libraries=['gomp']),
-                    Extension('exotk.utils.likelihood_f', ['src/utils/likelihood.f90'], libraries=['gomp'])]
+                    Extension('exotk.utils.likelihood_f', ['src/utils/likelihood.f90'], libraries=['gomp']),
+                    Extension('exotk.utils.phase_f', ['src/utils/phase_effects.f90'], libraries=['gomp'])]
      )

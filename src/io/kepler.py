@@ -3,7 +3,7 @@ import kplr
 
 from ..keplerlc import KeplerLC
 
-def load_kepler_lc(koi=None, planet=None, cadence='l', use_pdc=False, phase_offset=0, imin=0, imax=None, **kwargs):
+def load_kepler_lc(target, cadence='l', use_pdc=False, phase_offset=0, imin=0, imax=None, **kwargs):
     """
     Import a Kepler light curve.
 
@@ -22,13 +22,19 @@ def load_kepler_lc(koi=None, planet=None, cadence='l', use_pdc=False, phase_offs
     tr_factor  in-transit duration to exclude for oot level estimation
     bl_min      minimum baseline duration
     """
-
     client = kplr.API()
+
+    if isinstance(target, kplr.api.KOI):
+        koi = target
+    elif isinstance(target, str) and 'kepler-' in target.lower():
+        koi = client.planet(planet).koi
+    else:
+        koi = client.koi(koi)
+
     bl_min    = kwargs.get('bl_min',    0.5)
     bl_factor = kwargs.get('bl_factor', 3.0)
     td_factor = kwargs.get('td_factor', 1.2)
 
-    koi = client.koi(koi) if koi is not None else client.planet(planet).koi
     files = koi.get_light_curves(short_cadence=False if cadence == 'l' else True)
     cadence_string = 'llc' if cadence == 'l' else 'slc'
 
