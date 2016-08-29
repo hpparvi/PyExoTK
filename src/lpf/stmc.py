@@ -44,7 +44,7 @@ class SingleTransitMultiColorLPF(object):
                 ldc_label =  'ldc_{:d}_{:d}'.format(i,j)
                 if ldc_label in priors.keys():
                     if self.verbosity > 0:
-                        print 'Using an informative prior on limb darkening: ' + ldc_label
+                        print ('Using an informative prior on limb darkening: ' + ldc_label)
                     self.informative_limb_darkening = True
 
                 self.priors.append(priors.get(ldc_label, UP(-0.5, 1, ldc_label)))  ##  ls + 0 + nldc*i ldc coefficients

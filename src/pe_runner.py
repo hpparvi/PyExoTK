@@ -67,13 +67,13 @@ def pe_runner(lpfun, basename, **kwargs):
         best_ll = 1e80
         for i,res in enumerate(de(n_de_iters)):
             if res[1] < best_ll:
-                print i, res[1]
+                print (i, res[1])
                 best_ll = res[1]
 
         with open(de_res_fname, 'w') as fout:
             dump({'population':de.population, 'best':de.minimum_location}, fout)
         de_population, de_best_fit = de.population, de.minimum_location
-        print "time taken: {:4.2f}".format(time()-t_start)
+        print ("time taken: {:4.2f}".format(time()-t_start))
     else:
         with open(de_res_fname, 'r') as fin:
             de_res = load(fin)
@@ -91,7 +91,7 @@ def pe_runner(lpfun, basename, **kwargs):
         t_start = time()
 
         if mc_res_exists and mc_continue:
-            print 'Continuing from the previous MCMC run.'
+            print ('Continuing from the previous MCMC run.')
             with open(mc_res_fname,'r') as fin:
                 pv0 = load(fin)['chain'][:,-1,:]
         else:
@@ -111,7 +111,7 @@ def pe_runner(lpfun, basename, **kwargs):
         sampler = emcee.EnsembleSampler(pop_size, lpfun.ps.ndim, lpfun)
         for i, e in enumerate(sampler.sample(pv0, iterations=n_mc_iters, thin=thinning)):
             t_cur = time()
-            print "{:4d}/{:4d}  Secs/iteration {:6.2f}  Last update {:6.2f} s ago  Total time {:6.2f} s   Acceptance {:6.3f}".format(i+1, n_mc_iters, t_cur-t_iteration_start, t_cur-t_last_update, t_cur-t_start, sampler.acceptance_fraction.mean())
+            print ("{:4d}/{:4d}  Secs/iteration {:6.2f}  Last update {:6.2f} s ago  Total time {:6.2f} s   Acceptance {:6.3f}".format(i+1, n_mc_iters, t_cur-t_iteration_start, t_cur-t_last_update, t_cur-t_start, sampler.acceptance_fraction.mean()))
             if i != 0 and (t_cur - t_last_update > update_interval):
                 pplot.update(sampler.chain, i//thinning)
                 t_last_update = t_cur

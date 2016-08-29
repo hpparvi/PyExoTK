@@ -165,4 +165,3 @@ if __name__ == '__main__':
     g.map_orbit(g.pv0[0,:])
     pl.plot(g.lclp[0].lcdata.time, g.lclp[0].compute_transit(g.pv0[0,:]))
     pl.show()
-    print g.pv0.shape

@@ -42,7 +42,7 @@ class LCLogPosteriorFunction(object):
 
 
     def compute_transit(self, pv):
-        print self.group._pv_o_physical
+        print (self.group._pv_o_physical)
         z = of.z_eccentric(self.lcdata.time, *self.group._pv_o_physical, nthreads=0)
         f = self.tmodel(z, m.sqrt(pv[self.pid_ar[0]]), pv[self.pid_ld], 0.0)
         return f

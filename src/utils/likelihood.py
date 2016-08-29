@@ -1,7 +1,7 @@
 from numpy import square, log, ndarray, pi
 from math import log as mlog
 
-from likelihood_f import lh as lhf
+from .likelihood_f import lh as lhf
 
 LOG_TWO_PI = log(2*pi)
 
