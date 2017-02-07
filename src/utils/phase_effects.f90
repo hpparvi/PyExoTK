@@ -6,8 +6,34 @@ module phase_effects
   real(8), parameter :: half_pi     = 2.d0*atan(1.d0)
   real(8), parameter :: log_two_pi  = log(8.d0*atan(1.d0))
 contains
+
+  subroutine phase(true_anomaly, i, w, nthreads, npt, ph)
+    integer, intent(in) :: npt, nthreads
+    real(8), intent(in) :: i, w
+    real(8), intent(in),  dimension(npt) :: true_anomaly
+    real(8), intent(out), dimension(npt) :: ph
+    
+    !$ call omp_set_num_threads(nthreads)
+    !$omp parallel workshare
+    ph = sin(pi+w+true_anomaly)*sin(i)
+    ph = acos(ph)
+    !$omp end parallel workshare
+  end subroutine phase
   
   subroutine cos_phase(true_anomaly, i, w, nthreads, npt, cph)
+    integer, intent(in) :: npt, nthreads
+    real(8), intent(in) :: i, w
+    real(8), intent(in),  dimension(npt) :: true_anomaly
+    real(8), intent(out), dimension(npt) :: cph
+
+    !$ call omp_set_num_threads(nthreads)
+    !$omp parallel workshare
+    cph = sin(pi+w+true_anomaly)*sin(i)
+    !$omp end parallel workshare
+  end subroutine cos_phase
+
+
+  subroutine cos_phase2(true_anomaly, i, w, nthreads, npt, cph)
     integer, intent(in) :: npt, nthreads
     real(8), intent(in) :: i, w
     real(8), intent(in),  dimension(npt) :: true_anomaly
@@ -22,8 +48,8 @@ contains
        cph(j) = sin(pi+w+true_anomaly(j))*si
     end do
     !$omp end parallel do
-  end subroutine cos_phase
-
+  end subroutine cos_phase2
+  
   !! From Lillo-Box, J., Barrado, D., Moya, A., Montesinos, B., Montalbán, J., Bayo, A., … Henning, T. (2014). 
   !! Kepler-91b: a planet at the end of its life. Astronomy & Astrophysics, 562, A109. 
   !! doi:10.1051/0004-6361/201322001
